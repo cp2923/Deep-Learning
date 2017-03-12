@@ -6,7 +6,7 @@ import sys
 import numpy
 import random
 from collections import OrderedDict
-#import mir_eval
+import mir_eval
 
 import theano
 import theano.tensor as T
@@ -15,7 +15,7 @@ from theano.tensor.signal import pool
 
 import sys
 from sklearn.preprocessing import normalize
-#from mir_eval.separation import bss_eval_sources
+from mir_eval.separation import bss_eval_sources
 sys.setrecursionlimit(15000)
 
 class RNNSLU3(object):
@@ -141,9 +141,9 @@ def test_DRNN(trdata ,tedata, vadata, learning_rate=0.1, n_epochs=20, batch_size
     # filter_shape: (number of filters, num input feature maps, filter height, filter width)
     layer0 = RNNSLU3(
         input=layer0_input,
-        nh = 300
+        nh = 150
     )
-    w = theano.shared(name='w', value=0.2 * numpy.random.uniform(-1.0, 1.0, (300, 1026)).astype(theano.config.floatX))
+    w = theano.shared(name='w', value=numpy.random.uniform(-1.0, 1.0, (150, 1026)).astype(theano.config.floatX))
     b = theano.shared(name='b', value=numpy.zeros((1026,), dtype=theano.config.floatX))
 
 
@@ -224,7 +224,7 @@ def test_DRNN(trdata ,tedata, vadata, learning_rate=0.1, n_epochs=20, batch_size
     print('... training')
     # early-stopping parameters
     patience = 10000  # look as this many examples regardless
-    patience_increase = 2  # wait this much longer when a new best is
+    patience_increase = 50  # wait this much longer when a new best is
                            # found
     improvement_threshold = 0.995  # a relative improvement of this much is
                                    # considered significant
@@ -291,12 +291,12 @@ def test_DRNN(trdata ,tedata, vadata, learning_rate=0.1, n_epochs=20, batch_size
         [index],
         [out1,out2],
         givens={
-            x: test_set_x[index],
-            z: test_set_z[index]
+            x: valid_set_x[index],
+            z: valid_set_z[index]
         }
     )
-    out_wav = []
-    for i in range(len(n_valid_batches)):
+    out_wav=[]
+    for i in range(n_valid_batches):
         out_wav.append(out_model(i))
 
     end_time = timeit.default_timer()
